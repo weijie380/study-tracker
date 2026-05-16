@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
-import { storage, storageEvents } from './storage';
+import { storage } from './storage';
 
 function ProgressModule() {
   const [tasks, setTasks] = useState([]);
-  const [todayEpisodesByTask, setTodayEpisodesByTask] = useState({});
-  const [todayTotal, setTodayTotal] = useState(0);
   const [history, setHistory] = useState([]);
 
-  const refreshData = () => {
+  useEffect(() => {
     const savedTasks = storage.getTasks();
     setTasks(savedTasks);
-    setTodayEpisodesByTask(storage.getTodayEpisodesByTask());
-    setTodayTotal(storage.getTodayTotalEpisodes());
 
     const dailyEpisodes = storage.getDailyEpisodes();
     const historyData = Object.entries(dailyEpisodes)
@@ -22,12 +18,6 @@ function ProgressModule() {
         return { date, taskEpisodes, total };
       });
     setHistory(historyData);
-  };
-
-  useEffect(() => {
-    refreshData();
-    const unsubscribe = storageEvents.on('dailyEpisodesUpdated', refreshData);
-    return unsubscribe;
   }, []);
 
   const getOverallProgress = () => {
@@ -81,25 +71,10 @@ function ProgressModule() {
             style={{ width: `${overallProgress}%` }}
           ></div>
         </div>
-        <div className="flex justify-between mt-2 text-sm text-gray-500">
-          <span>今日观看: {todayTotal} 集</span>
+        <div className="flex justify-end mt-2 text-sm text-gray-500">
           <span>总任务数: {tasks.length}</span>
         </div>
       </div>
-
-      {Object.keys(todayEpisodesByTask).length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">今日各任务观看集数</h3>
-          <div className="space-y-2">
-            {Object.entries(todayEpisodesByTask).map(([taskId, episodes]) => (
-              <div key={taskId} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
-                <span className="text-gray-700 font-medium truncate flex-1">{getTaskName(taskId)}</span>
-                <span className="text-blue-600 font-bold ml-2">{episodes} 集</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {tasks.length > 0 && (
         <div className="mb-6">
