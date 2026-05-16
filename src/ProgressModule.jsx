@@ -34,12 +34,12 @@ function ProgressModule() {
   }, []);
 
   const getOverallProgress = () => {
-    if (tasks.length === 0) return 0;
+    if (tasks.length === 0) return '0.0';
     const totalProgress = tasks.reduce((sum, task) => {
       if (task.totalEpisodes === 0) return sum;
       return sum + (task.currentEpisode / task.totalEpisodes) * 100;
     }, 0);
-    return Math.round(totalProgress / tasks.length);
+    return (totalProgress / tasks.length).toFixed(1);
   };
 
   const overallProgress = getOverallProgress();
@@ -88,8 +88,8 @@ function ProgressModule() {
           <div className="space-y-3">
             {tasks.map(task => {
               const taskProgress = task.totalEpisodes > 0 
-                ? Math.round((task.currentEpisode / task.totalEpisodes) * 100) 
-                : 0;
+                ? ((task.currentEpisode / task.totalEpisodes) * 100).toFixed(1)
+                : '0.0';
               return (
                 <div key={task.id} className="flex items-center gap-3">
                   <span className="text-gray-700 font-medium w-32 truncate">{task.name}</span>

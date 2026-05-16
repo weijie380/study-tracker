@@ -99,8 +99,8 @@ function TaskModule({ onProgressUpdate }) {
   };
 
   const getProgress = (task) => {
-    if (task.totalEpisodes === 0) return 0;
-    return Math.round((task.currentEpisode / task.totalEpisodes) * 100);
+    if (task.totalEpisodes === 0) return '0.0';
+    return ((task.currentEpisode / task.totalEpisodes) * 100).toFixed(1);
   };
 
   const getProgressColor = (pct) => {
