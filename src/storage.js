@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
   TASKS: 'study_tasks',
-  PROGRESS: 'study_progress'
+  PROGRESS: 'study_progress',
+  DAILY_EPISODES: 'daily_episodes'
 };
 
 export const storage = {
@@ -17,6 +18,19 @@ export const storage = {
   },
   saveProgress(progress) {
     localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
+  },
+  getDailyEpisodes() {
+    const data = localStorage.getItem(STORAGE_KEYS.DAILY_EPISODES);
+    return data ? JSON.parse(data) : {};
+  },
+  saveDailyEpisodes(dailyEpisodes) {
+    localStorage.setItem(STORAGE_KEYS.DAILY_EPISODES, JSON.stringify(dailyEpisodes));
+  },
+  addDailyEpisodes(date, count) {
+    const dailyEpisodes = this.getDailyEpisodes();
+    dailyEpisodes[date] = (dailyEpisodes[date] || 0) + count;
+    this.saveDailyEpisodes(dailyEpisodes);
+    return dailyEpisodes[date];
   }
 };
 

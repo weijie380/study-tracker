@@ -3,21 +3,21 @@ import { storage } from './storage';
 
 function ProgressModule() {
   const [tasks, setTasks] = useState([]);
-  const [progress, setProgress] = useState({ completed: 0, total: 0 });
+  const [todayEpisodes, setTodayEpisodes] = useState(0);
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
     const savedTasks = storage.getTasks();
     setTasks(savedTasks);
     
-    const allProgress = storage.getProgress();
     const today = new Date().toISOString().split('T')[0];
-    setProgress(allProgress[today] || { completed: 0, total: 0 });
+    const dailyEpisodes = storage.getDailyEpisodes();
+    setTodayEpisodes(dailyEpisodes[today] || 0);
 
-    const historyData = Object.entries(allProgress)
+    const historyData = Object.entries(dailyEpisodes)
       .sort((a, b) => b[0].localeCompare(a[0]))
       .slice(0, 7)
-      .map(([date, data]) => ({ date, ...data }));
+      .map(([date, episodes]) => ({ date, episodes }));
     setHistory(historyData);
   }, []);
 
@@ -26,9 +26,9 @@ function ProgressModule() {
       const savedTasks = storage.getTasks();
       setTasks(savedTasks);
       
-      const allProgress = storage.getProgress();
       const today = new Date().toISOString().split('T')[0];
-      setProgress(allProgress[today] || { completed: 0, total: 0 });
+      const dailyEpisodes = storage.getDailyEpisodes();
+      setTodayEpisodes(dailyEpisodes[today] || 0);
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -80,8 +80,8 @@ function ProgressModule() {
           ></div>
         </div>
         <div className="flex justify-between mt-2 text-sm text-gray-500">
-          <span>已完成任务: {progress.completed}</span>
-          <span>总任务数: {progress.total}</span>
+          <span>今日观看: {todayEpisodes} 集</span>
+          <span>总任务数: {tasks.length}</span>
         </div>
       </div>
 
@@ -120,18 +120,19 @@ function ProgressModule() {
           <h3 className="text-lg font-semibold text-gray-700 mb-3">最近 7 天记录</h3>
           <div className="space-y-2">
             {history.slice(1).map(item => {
-              const pct = item.total > 0 ? Math.round((item.completed / item.total) * 100) : 0;
+              const maxEpisodes = Math.max(...history.map(h => h.episodes), 1);
+              const pct = (item.episodes / maxEpisodes) * 100;
               return (
                 <div key={item.date} className="flex items-center gap-3 text-sm">
                   <span className="text-gray-500 w-24">{item.date.slice(5)}</span>
                   <div className="flex-1 bg-gray-100 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full ${getProgressBarColor(pct)}`}
+                      className="h-2 rounded-full bg-blue-500"
                       style={{ width: `${pct}%` }}
                     ></div>
                   </div>
-                  <span className={`font-medium w-12 text-right ${getProgressColor(pct)}`}>
-                    {pct}%
+                  <span className="font-medium w-12 text-right text-blue-600">
+                    {item.episodes} 集
                   </span>
                 </div>
               );

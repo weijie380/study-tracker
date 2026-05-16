@@ -96,6 +96,15 @@ function TaskModule({ onProgressUpdate }) {
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
     updateProgress(updatedTasks);
+
+    if (field === 'currentEpisode') {
+      const oldTask = tasks.find(t => t.id === id);
+      if (oldTask && numValue > oldTask.currentEpisode) {
+        const today = new Date().toISOString().split('T')[0];
+        const diff = numValue - oldTask.currentEpisode;
+        storage.addDailyEpisodes(today, diff);
+      }
+    }
   };
 
   const getProgress = (task) => {
