@@ -36,9 +36,8 @@ function QuoteFooter() {
         className={`transition-opacity duration-400 ${fade ? 'opacity-100' : 'opacity-0'}`}
       >
         <p className="text-amber-800/70 italic text-base leading-relaxed">
-          "{quote.text}"
+          "{quote.text}" <span className="text-amber-700/50 not-italic">— {quote.author}</span>
         </p>
-        <p className="text-amber-700/50 text-sm mt-1">— {quote.author}</p>
       </div>
     </footer>
   );
