@@ -1,6 +1,5 @@
 const STORAGE_KEYS = {
   TASKS: 'study_tasks',
-  QUOTES: 'study_quotes',
   PROGRESS: 'study_progress'
 };
 
@@ -11,13 +10,6 @@ export const storage = {
   },
   saveTasks(tasks) {
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
-  },
-  getQuotes() {
-    const data = localStorage.getItem(STORAGE_KEYS.QUOTES);
-    return data ? JSON.parse(data) : [];
-  },
-  saveQuotes(quotes) {
-    localStorage.setItem(STORAGE_KEYS.QUOTES, JSON.stringify(quotes));
   },
   getProgress() {
     const data = localStorage.getItem(STORAGE_KEYS.PROGRESS);
