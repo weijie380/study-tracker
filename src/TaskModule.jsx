@@ -83,6 +83,18 @@ function TaskModule({ onProgressUpdate }) {
     }
   };
 
+  const updateField = (id, field, value) => {
+    const updatedTasks = tasks.map(t => {
+      if (t.id === id) {
+        return { ...t, [field]: value };
+      }
+      return t;
+    });
+    setTasks(updatedTasks);
+    storage.saveTasks(updatedTasks);
+    updateProgress(updatedTasks);
+  };
+
   const updateEpisode = (id, field, value) => {
     const numValue = parseInt(value) || 0;
     const updatedTasks = tasks.map(t => {
@@ -227,9 +239,9 @@ function TaskModule({ onProgressUpdate }) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">任务名称</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">进度</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">集数</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">备注</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">开始时间</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">结束时间</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-40">备注</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-36">开始时间</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-36">结束时间</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -254,7 +266,12 @@ function TaskModule({ onProgressUpdate }) {
                     </td>
                     <td className="px-4 py-3 text-gray-500">{index + 1}</td>
                     <td className="px-4 py-3">
-                      <span className="font-medium text-gray-800">{task.name}</span>
+                      <input
+                        type="text"
+                        value={task.name}
+                        onChange={(e) => updateField(task.id, 'name', e.target.value)}
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -288,13 +305,29 @@ function TaskModule({ onProgressUpdate }) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-600">{task.notes || '-'}</span>
+                      <input
+                        type="text"
+                        value={task.notes}
+                        onChange={(e) => updateField(task.id, 'notes', e.target.value)}
+                        placeholder="-"
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                      />
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-500">{task.startDate}</span>
+                      <input
+                        type="date"
+                        value={task.startDate}
+                        onChange={(e) => updateField(task.id, 'startDate', e.target.value)}
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                      />
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-500">{task.endDate || '-'}</span>
+                      <input
+                        type="date"
+                        value={task.endDate || ''}
+                        onChange={(e) => updateField(task.id, 'endDate', e.target.value)}
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                      />
                     </td>
                   </tr>
                 );
