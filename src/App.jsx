@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import TaskModule from './TaskModule';
 import ProgressModule from './ProgressModule';
+import QuoteFooter from './QuoteFooter';
 import { storage } from './storage';
 
 function App() {
@@ -48,7 +49,7 @@ function App() {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-amber-900 mb-2">📖 学习计划追踪器</h1>
+          <h1 className="text-4xl font-bold text-amber-900 mb-2">📖 weijie学习计划</h1>
           <div className="flex justify-center gap-3 mt-4">
             <button
               onClick={handleExport}
@@ -76,6 +77,8 @@ function App() {
           <TaskModule />
           <ProgressModule />
         </div>
+
+        <QuoteFooter />
       </div>
     </div>
   );
