@@ -2,10 +2,14 @@ import { useState, useEffect } from 'react';
 import { storage } from './storage';
 
 function ProgressModule() {
+  const [tasks, setTasks] = useState([]);
   const [progress, setProgress] = useState({ completed: 0, total: 0 });
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
+    const savedTasks = storage.getTasks();
+    setTasks(savedTasks);
+    
     const allProgress = storage.getProgress();
     const today = new Date().toISOString().split('T')[0];
     setProgress(allProgress[today] || { completed: 0, total: 0 });
@@ -19,6 +23,9 @@ function ProgressModule() {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      const savedTasks = storage.getTasks();
+      setTasks(savedTasks);
+      
       const allProgress = storage.getProgress();
       const today = new Date().toISOString().split('T')[0];
       setProgress(allProgress[today] || { completed: 0, total: 0 });
@@ -26,7 +33,16 @@ function ProgressModule() {
     return () => clearInterval(interval);
   }, []);
 
-  const percentage = progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0;
+  const getOverallProgress = () => {
+    if (tasks.length === 0) return 0;
+    const totalProgress = tasks.reduce((sum, task) => {
+      if (task.totalEpisodes === 0) return sum;
+      return sum + (task.currentEpisode / task.totalEpisodes) * 100;
+    }, 0);
+    return Math.round(totalProgress / tasks.length);
+  };
+
+  const overallProgress = getOverallProgress();
 
   const getProgressColor = (pct) => {
     if (pct >= 80) return 'text-green-600';
@@ -43,28 +59,58 @@ function ProgressModule() {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span className="text-3xl">📊</span>
+        <span className="text-3xl"></span>
         今日学习进度
       </h2>
 
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-gray-600">完成进度</span>
-          <span className={`text-2xl font-bold ${getProgressColor(percentage)}`}>
-            {percentage}%
+          <span className="text-gray-600">总体完成进度</span>
+          <span className={`text-2xl font-bold ${getProgressColor(overallProgress)}`}>
+            {overallProgress}%
           </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-4">
           <div
-            className={`h-4 rounded-full transition-all duration-500 ${getProgressBarColor(percentage)}`}
-            style={{ width: `${percentage}%` }}
+            className={`h-4 rounded-full transition-all duration-500 ${getProgressBarColor(overallProgress)}`}
+            style={{ width: `${overallProgress}%` }}
           ></div>
         </div>
         <div className="flex justify-between mt-2 text-sm text-gray-500">
-          <span>已完成: {progress.completed}</span>
-          <span>总任务: {progress.total}</span>
+          <span>已完成任务: {progress.completed}</span>
+          <span>总任务数: {progress.total}</span>
         </div>
       </div>
+
+      {tasks.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">各任务进度</h3>
+          <div className="space-y-3">
+            {tasks.map(task => {
+              const taskProgress = task.totalEpisodes > 0 
+                ? Math.round((task.currentEpisode / task.totalEpisodes) * 100) 
+                : 0;
+              return (
+                <div key={task.id} className="flex items-center gap-3">
+                  <span className="text-gray-700 font-medium w-32 truncate">{task.name}</span>
+                  <div className="flex-1 bg-gray-100 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${getProgressBarColor(taskProgress)}`}
+                      style={{ width: `${taskProgress}%` }}
+                    ></div>
+                  </div>
+                  <span className={`font-medium w-12 text-right text-sm ${getProgressColor(taskProgress)}`}>
+                    {taskProgress}%
+                  </span>
+                  <span className="text-gray-500 text-sm w-16 text-right">
+                    {task.currentEpisode}/{task.totalEpisodes}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {history.length > 1 && (
         <div>

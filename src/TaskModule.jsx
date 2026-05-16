@@ -3,38 +3,56 @@ import { storage, generateId } from './storage';
 
 function TaskModule({ onProgressUpdate }) {
   const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState('');
+  const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [editText, setEditText] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    link: '',
+    totalEpisodes: '',
+    currentEpisode: '',
+    notes: '',
+    startDate: ''
+  });
 
   useEffect(() => {
     setTasks(storage.getTasks());
   }, []);
 
   const updateProgress = (updatedTasks) => {
-    const completedCount = updatedTasks.filter(t => t.completed).length;
-    const totalCount = updatedTasks.length;
     const today = new Date().toISOString().split('T')[0];
     const progress = storage.getProgress();
-    progress[today] = { completed: completedCount, total: totalCount, timestamp: Date.now() };
+    const totalTasks = updatedTasks.length;
+    const completedTasks = updatedTasks.filter(t => {
+      const pct = t.totalEpisodes > 0 ? (t.currentEpisode / t.totalEpisodes) * 100 : 0;
+      return pct >= 100;
+    }).length;
+    progress[today] = { completed: completedTasks, total: totalTasks, timestamp: Date.now() };
     storage.saveProgress(progress);
     onProgressUpdate?.(progress[today]);
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const addTask = () => {
-    if (!newTask.trim()) return;
-    const task = { id: generateId(), text: newTask.trim(), completed: false, createdAt: Date.now() };
+    if (!formData.name.trim()) return;
+    const task = {
+      id: generateId(),
+      name: formData.name.trim(),
+      link: formData.link.trim(),
+      totalEpisodes: parseInt(formData.totalEpisodes) || 0,
+      currentEpisode: parseInt(formData.currentEpisode) || 0,
+      notes: formData.notes.trim(),
+      startDate: formData.startDate || new Date().toISOString().split('T')[0],
+      createdAt: Date.now()
+    };
     const updatedTasks = [...tasks, task];
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
-    setNewTask('');
-    updateProgress(updatedTasks);
-  };
-
-  const toggleTask = (id) => {
-    const updatedTasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-    setTasks(updatedTasks);
-    storage.saveTasks(updatedTasks);
+    setFormData({ name: '', link: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '' });
+    setShowForm(false);
     updateProgress(updatedTasks);
   };
 
@@ -45,104 +63,209 @@ function TaskModule({ onProgressUpdate }) {
     updateProgress(updatedTasks);
   };
 
-  const startEdit = (task) => {
-    setEditingId(task.id);
-    setEditText(task.text);
-  };
-
-  const saveEdit = (id) => {
-    if (!editText.trim()) return;
-    const updatedTasks = tasks.map(t => t.id === id ? { ...t, text: editText.trim() } : t);
+  const updateEpisode = (id, field, value) => {
+    const numValue = parseInt(value) || 0;
+    const updatedTasks = tasks.map(t => {
+      if (t.id === id) {
+        const updated = { ...t, [field]: numValue };
+        if (field === 'currentEpisode' && numValue > updated.totalEpisodes) {
+          updated.currentEpisode = updated.totalEpisodes;
+        }
+        return updated;
+      }
+      return t;
+    });
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
-    setEditingId(null);
-    setEditText('');
+    updateProgress(updatedTasks);
+  };
+
+  const getProgress = (task) => {
+    if (task.totalEpisodes === 0) return 0;
+    return Math.round((task.currentEpisode / task.totalEpisodes) * 100);
+  };
+
+  const getProgressColor = (pct) => {
+    if (pct >= 100) return 'bg-green-500';
+    if (pct >= 50) return 'bg-blue-500';
+    if (pct > 0) return 'bg-yellow-500';
+    return 'bg-gray-300';
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span className="text-3xl">📚</span>
-        学习任务
-      </h2>
-      
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && addTask()}
-          placeholder="添加新的学习任务..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
-        <button
-          onClick={addTask}
-          className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-        >
-          添加
-        </button>
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <span className="text-3xl">📚</span>
+            学习任务
+          </h2>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            {showForm ? '取消' : '+ 添加任务'}
+          </button>
+        </div>
+
+        {showForm && (
+          <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="任务名称 *"
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <input
+                type="url"
+                name="link"
+                value={formData.link}
+                onChange={handleInputChange}
+                placeholder="链接地址"
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <input
+                type="number"
+                name="totalEpisodes"
+                value={formData.totalEpisodes}
+                onChange={handleInputChange}
+                placeholder="总集数"
+                min="0"
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <input
+                type="number"
+                name="currentEpisode"
+                value={formData.currentEpisode}
+                onChange={handleInputChange}
+                placeholder="当前集数"
+                min="0"
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <input
+                type="date"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleInputChange}
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <input
+                type="text"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="备注"
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            <button
+              onClick={addTask}
+              className="mt-3 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            >
+              确认添加
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-2 max-h-96 overflow-y-auto">
-        {tasks.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">暂无任务，添加一个吧！</p>
-        ) : (
-          tasks.map(task => (
-            <div
-              key={task.id}
-              className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                task.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200 hover:border-purple-300'
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => toggleTask(task.id)}
-                className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
-              />
-              {editingId === task.id ? (
-                <input
-                  type="text"
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && saveEdit(task.id)}
-                  className="flex-1 px-2 py-1 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  autoFocus
-                />
-              ) : (
-                <span
-                  className={`flex-1 cursor-pointer ${task.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}
-                  onDoubleClick={() => startEdit(task)}
-                >
-                  {task.text}
-                </span>
-              )}
-              {editingId === task.id ? (
-                <button
-                  onClick={() => saveEdit(task.id)}
-                  className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  保存
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => startEdit(task)}
-                    className="text-gray-400 hover:text-blue-500 transition-colors"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    🗑️
-                  </button>
-                </>
-              )}
-            </div>
-          ))
-        )}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">任务名称</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">链接</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">进度</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">集数</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">备注</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">开始时间</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {tasks.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                  暂无任务，点击"添加任务"开始吧！
+                </td>
+              </tr>
+            ) : (
+              tasks.map((task, index) => {
+                const progress = getProgress(task);
+                return (
+                  <tr key={task.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-gray-500">{index + 1}</td>
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-gray-800">{task.name}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {task.link ? (
+                        <a
+                          href={task.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline text-sm truncate block max-w-xs"
+                        >
+                          {task.link}
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 text-sm">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all ${getProgressColor(progress)}`}
+                            style={{ width: `${progress}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 w-10">{progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={task.currentEpisode}
+                          onChange={(e) => updateEpisode(task.id, 'currentEpisode', e.target.value)}
+                          className="w-12 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          min="0"
+                          max={task.totalEpisodes}
+                        />
+                        <span className="text-gray-500">/</span>
+                        <input
+                          type="number"
+                          value={task.totalEpisodes}
+                          onChange={(e) => updateEpisode(task.id, 'totalEpisodes', e.target.value)}
+                          className="w-12 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          min="0"
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-600">{task.notes || '-'}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-500">{task.startDate}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        ️
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
