@@ -227,7 +227,7 @@ function TaskModule({ onProgressUpdate }) {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-10">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-10">
                 <input
                   type="checkbox"
                   checked={tasks.length > 0 && selectedIds.size === tasks.length}
@@ -235,7 +235,7 @@ function TaskModule({ onProgressUpdate }) {
                   className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">序号</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-16">序号</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">任务名称</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">进度</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">集数</th>
