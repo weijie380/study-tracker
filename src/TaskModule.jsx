@@ -4,10 +4,9 @@ import { storage, generateId } from './storage';
 function TaskModule({ onProgressUpdate }) {
   const [tasks, setTasks] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [formData, setFormData] = useState({
     name: '',
-    link: '',
     totalEpisodes: '',
     currentEpisode: '',
     notes: '',
@@ -41,7 +40,6 @@ function TaskModule({ onProgressUpdate }) {
     const task = {
       id: generateId(),
       name: formData.name.trim(),
-      link: formData.link.trim(),
       totalEpisodes: parseInt(formData.totalEpisodes) || 0,
       currentEpisode: parseInt(formData.currentEpisode) || 0,
       notes: formData.notes.trim(),
@@ -51,16 +49,36 @@ function TaskModule({ onProgressUpdate }) {
     const updatedTasks = [...tasks, task];
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
-    setFormData({ name: '', link: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '' });
+    setFormData({ name: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '' });
     setShowForm(false);
     updateProgress(updatedTasks);
   };
 
-  const deleteTask = (id) => {
-    const updatedTasks = tasks.filter(t => t.id !== id);
+  const deleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    const updatedTasks = tasks.filter(t => !selectedIds.has(t.id));
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
+    setSelectedIds(new Set());
     updateProgress(updatedTasks);
+  };
+
+  const toggleSelect = (id) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === tasks.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(tasks.map(t => t.id)));
+    }
   };
 
   const updateEpisode = (id, field, value) => {
@@ -100,12 +118,22 @@ function TaskModule({ onProgressUpdate }) {
             <span className="text-3xl">📚</span>
             学习任务
           </h2>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            {showForm ? '取消' : '+ 添加任务'}
-          </button>
+          <div className="flex gap-2">
+            {selectedIds.size > 0 && (
+              <button
+                onClick={deleteSelected}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+              >
+                删除选中 ({selectedIds.size})
+              </button>
+            )}
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            >
+              {showForm ? '取消' : '+ 添加任务'}
+            </button>
+          </div>
         </div>
 
         {showForm && (
@@ -117,14 +145,6 @@ function TaskModule({ onProgressUpdate }) {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="任务名称 *"
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-              <input
-                type="url"
-                name="link"
-                value={formData.link}
-                onChange={handleInputChange}
-                placeholder="链接地址"
                 className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <input
@@ -158,7 +178,7 @@ function TaskModule({ onProgressUpdate }) {
                 value={formData.notes}
                 onChange={handleInputChange}
                 placeholder="备注"
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 md:col-span-2"
               />
             </div>
             <button
@@ -175,20 +195,26 @@ function TaskModule({ onProgressUpdate }) {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-10">
+                <input
+                  type="checkbox"
+                  checked={tasks.length > 0 && selectedIds.size === tasks.length}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">#</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">任务名称</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">链接</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">进度</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">集数</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">集数</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">备注</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">开始时间</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">开始时间</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {tasks.length === 0 ? (
               <tr>
-                <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
                   暂无任务，点击"添加任务"开始吧！
                 </td>
               </tr>
@@ -196,24 +222,18 @@ function TaskModule({ onProgressUpdate }) {
               tasks.map((task, index) => {
                 const progress = getProgress(task);
                 return (
-                  <tr key={task.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={task.id} className={`hover:bg-gray-50 transition-colors ${selectedIds.has(task.id) ? 'bg-purple-50' : ''}`}>
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(task.id)}
+                        onChange={() => toggleSelect(task.id)}
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                    </td>
                     <td className="px-4 py-3 text-gray-500">{index + 1}</td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-gray-800">{task.name}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {task.link ? (
-                        <a
-                          href={task.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 hover:underline text-sm truncate block max-w-xs"
-                        >
-                          {task.link}
-                        </a>
-                      ) : (
-                        <span className="text-gray-400 text-sm">-</span>
-                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -227,12 +247,12 @@ function TaskModule({ onProgressUpdate }) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <input
                           type="number"
                           value={task.currentEpisode}
                           onChange={(e) => updateEpisode(task.id, 'currentEpisode', e.target.value)}
-                          className="w-12 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                           min="0"
                           max={task.totalEpisodes}
                         />
@@ -241,7 +261,7 @@ function TaskModule({ onProgressUpdate }) {
                           type="number"
                           value={task.totalEpisodes}
                           onChange={(e) => updateEpisode(task.id, 'totalEpisodes', e.target.value)}
-                          className="w-12 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                           min="0"
                         />
                       </div>
@@ -251,14 +271,6 @@ function TaskModule({ onProgressUpdate }) {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-sm text-gray-500">{task.startDate}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        ️
-                      </button>
                     </td>
                   </tr>
                 );
