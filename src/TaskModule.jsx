@@ -154,7 +154,7 @@ function TaskModule({ onProgressUpdate }) {
             )}
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
             >
               {showForm ? '取消' : '+ 添加任务'}
             </button>
@@ -162,7 +162,7 @@ function TaskModule({ onProgressUpdate }) {
         </div>
 
         {showForm && (
-          <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="mb-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <input
                 type="text"
@@ -170,7 +170,7 @@ function TaskModule({ onProgressUpdate }) {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="任务名称 *"
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <input
                 type="number"
@@ -179,7 +179,7 @@ function TaskModule({ onProgressUpdate }) {
                 onChange={handleInputChange}
                 placeholder="总集数"
                 min="0"
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <input
                 type="number"
@@ -188,21 +188,21 @@ function TaskModule({ onProgressUpdate }) {
                 onChange={handleInputChange}
                 placeholder="当前集数"
                 min="0"
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <input
                 type="date"
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleInputChange}
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <input
                 type="date"
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleInputChange}
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
               <input
                 type="text"
@@ -210,12 +210,12 @@ function TaskModule({ onProgressUpdate }) {
                 value={formData.notes}
                 onChange={handleInputChange}
                 placeholder="备注"
-                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 md:col-span-2"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 md:col-span-2"
               />
             </div>
             <button
               onClick={addTask}
-              className="mt-3 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              className="mt-3 px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium"
             >
               确认添加
             </button>
@@ -232,7 +232,7 @@ function TaskModule({ onProgressUpdate }) {
                   type="checkbox"
                   checked={tasks.length > 0 && selectedIds.size === tasks.length}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                  className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
                 />
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">#</th>
@@ -255,13 +255,13 @@ function TaskModule({ onProgressUpdate }) {
               tasks.map((task, index) => {
                 const progress = getProgress(task);
                 return (
-                  <tr key={task.id} className={`hover:bg-gray-50 transition-colors ${selectedIds.has(task.id) ? 'bg-purple-50' : ''}`}>
+                  <tr key={task.id} className={`hover:bg-gray-50 transition-colors ${selectedIds.has(task.id) ? 'bg-amber-50' : ''}`}>
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(task.id)}
                         onChange={() => toggleSelect(task.id)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
                       />
                     </td>
                     <td className="px-4 py-3 text-gray-500">{index + 1}</td>
@@ -270,7 +270,7 @@ function TaskModule({ onProgressUpdate }) {
                         type="text"
                         value={task.name}
                         onChange={(e) => updateField(task.id, 'name', e.target.value)}
-                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -290,7 +290,7 @@ function TaskModule({ onProgressUpdate }) {
                           type="number"
                           value={task.currentEpisode}
                           onChange={(e) => updateEpisode(task.id, 'currentEpisode', e.target.value)}
-                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                           min="0"
                           max={task.totalEpisodes}
                         />
@@ -299,7 +299,7 @@ function TaskModule({ onProgressUpdate }) {
                           type="number"
                           value={task.totalEpisodes}
                           onChange={(e) => updateEpisode(task.id, 'totalEpisodes', e.target.value)}
-                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-16 px-2 py-1 text-center border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                           min="0"
                         />
                       </div>
@@ -310,7 +310,7 @@ function TaskModule({ onProgressUpdate }) {
                         value={task.notes}
                         onChange={(e) => updateField(task.id, 'notes', e.target.value)}
                         placeholder="-"
-                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -318,7 +318,7 @@ function TaskModule({ onProgressUpdate }) {
                         type="date"
                         value={task.startDate}
                         onChange={(e) => updateField(task.id, 'startDate', e.target.value)}
-                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -326,7 +326,7 @@ function TaskModule({ onProgressUpdate }) {
                         type="date"
                         value={task.endDate || ''}
                         onChange={(e) => updateField(task.id, 'endDate', e.target.value)}
-                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-purple-400 rounded text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-transparent"
+                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
                       />
                     </td>
                   </tr>

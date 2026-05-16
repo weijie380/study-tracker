@@ -119,11 +119,11 @@ function ProgressModule() {
                     <span className="text-gray-500 w-24">{item.date.slice(5)}</span>
                     <div className="flex-1 bg-gray-100 rounded-full h-2">
                       <div
-                        className="h-2 rounded-full bg-blue-500"
+                        className="h-2 rounded-full bg-amber-500"
                         style={{ width: `${pct}%` }}
                       ></div>
                     </div>
-                    <span className="font-medium w-12 text-right text-blue-600">
+                    <span className="font-medium w-12 text-right text-amber-600">
                       {item.total} 集
                     </span>
                   </div>

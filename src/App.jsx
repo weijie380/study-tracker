@@ -48,17 +48,17 @@ function App() {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2"> 学习计划追踪器</h1>
+          <h1 className="text-4xl font-bold text-amber-900 mb-2">📖 学习计划追踪器</h1>
           <div className="flex justify-center gap-3 mt-4">
             <button
               onClick={handleExport}
-              className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors text-sm font-medium backdrop-blur"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium shadow-sm"
             >
               导出数据
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors text-sm font-medium backdrop-blur"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium shadow-sm"
             >
               导入数据
             </button>
