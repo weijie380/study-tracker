@@ -26,11 +26,23 @@ export const storage = {
   saveDailyEpisodes(dailyEpisodes) {
     localStorage.setItem(STORAGE_KEYS.DAILY_EPISODES, JSON.stringify(dailyEpisodes));
   },
-  addDailyEpisodes(date, count) {
+  addDailyEpisodes(date, taskId, count) {
     const dailyEpisodes = this.getDailyEpisodes();
-    dailyEpisodes[date] = (dailyEpisodes[date] || 0) + count;
+    if (!dailyEpisodes[date]) {
+      dailyEpisodes[date] = {};
+    }
+    dailyEpisodes[date][taskId] = (dailyEpisodes[date][taskId] || 0) + count;
     this.saveDailyEpisodes(dailyEpisodes);
     return dailyEpisodes[date];
+  },
+  getTodayEpisodesByTask() {
+    const today = new Date().toISOString().split('T')[0];
+    const dailyEpisodes = this.getDailyEpisodes();
+    return dailyEpisodes[today] || {};
+  },
+  getTodayTotalEpisodes() {
+    const todayEpisodes = this.getTodayEpisodesByTask();
+    return Object.values(todayEpisodes).reduce((sum, count) => sum + count, 0);
   }
 };
 

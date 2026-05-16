@@ -3,21 +3,26 @@ import { storage } from './storage';
 
 function ProgressModule() {
   const [tasks, setTasks] = useState([]);
-  const [todayEpisodes, setTodayEpisodes] = useState(0);
+  const [todayEpisodesByTask, setTodayEpisodesByTask] = useState({});
+  const [todayTotal, setTodayTotal] = useState(0);
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
     const savedTasks = storage.getTasks();
     setTasks(savedTasks);
     
-    const today = new Date().toISOString().split('T')[0];
-    const dailyEpisodes = storage.getDailyEpisodes();
-    setTodayEpisodes(dailyEpisodes[today] || 0);
+    const todayEpisodes = storage.getTodayEpisodesByTask();
+    setTodayEpisodesByTask(todayEpisodes);
+    setTodayTotal(storage.getTodayTotalEpisodes());
 
+    const dailyEpisodes = storage.getDailyEpisodes();
     const historyData = Object.entries(dailyEpisodes)
       .sort((a, b) => b[0].localeCompare(a[0]))
       .slice(0, 7)
-      .map(([date, episodes]) => ({ date, episodes }));
+      .map(([date, taskEpisodes]) => {
+        const total = Object.values(taskEpisodes).reduce((sum, count) => sum + count, 0);
+        return { date, taskEpisodes, total };
+      });
     setHistory(historyData);
   }, []);
 
@@ -26,9 +31,9 @@ function ProgressModule() {
       const savedTasks = storage.getTasks();
       setTasks(savedTasks);
       
-      const today = new Date().toISOString().split('T')[0];
-      const dailyEpisodes = storage.getDailyEpisodes();
-      setTodayEpisodes(dailyEpisodes[today] || 0);
+      const todayEpisodes = storage.getTodayEpisodesByTask();
+      setTodayEpisodesByTask(todayEpisodes);
+      setTodayTotal(storage.getTodayTotalEpisodes());
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -56,10 +61,15 @@ function ProgressModule() {
     return 'bg-red-500';
   };
 
+  const getTaskName = (taskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    return task ? task.name : '未知任务';
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span className="text-3xl">📊</span>
+        <span className="text-3xl"></span>
         今日学习进度
         <span className="text-sm font-normal text-gray-500 ml-2">
           {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
@@ -80,10 +90,24 @@ function ProgressModule() {
           ></div>
         </div>
         <div className="flex justify-between mt-2 text-sm text-gray-500">
-          <span>今日观看: {todayEpisodes} 集</span>
+          <span>今日观看: {todayTotal} 集</span>
           <span>总任务数: {tasks.length}</span>
         </div>
       </div>
+
+      {Object.keys(todayEpisodesByTask).length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-3">今日各任务观看集数</h3>
+          <div className="space-y-2">
+            {Object.entries(todayEpisodesByTask).map(([taskId, episodes]) => (
+              <div key={taskId} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                <span className="text-gray-700 font-medium truncate flex-1">{getTaskName(taskId)}</span>
+                <span className="text-blue-600 font-bold ml-2">{episodes} 集</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {tasks.length > 0 && (
         <div className="mb-6">
@@ -118,22 +142,34 @@ function ProgressModule() {
       {history.length > 1 && (
         <div>
           <h3 className="text-lg font-semibold text-gray-700 mb-3">最近 7 天记录</h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {history.slice(1).map(item => {
-              const maxEpisodes = Math.max(...history.map(h => h.episodes), 1);
-              const pct = (item.episodes / maxEpisodes) * 100;
+              const maxEpisodes = Math.max(...history.map(h => h.total), 1);
+              const pct = (item.total / maxEpisodes) * 100;
               return (
-                <div key={item.date} className="flex items-center gap-3 text-sm">
-                  <span className="text-gray-500 w-24">{item.date.slice(5)}</span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full bg-blue-500"
-                      style={{ width: `${pct}%` }}
-                    ></div>
+                <div key={item.date} className="text-sm">
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-gray-500 w-24">{item.date.slice(5)}</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full bg-blue-500"
+                        style={{ width: `${pct}%` }}
+                      ></div>
+                    </div>
+                    <span className="font-medium w-12 text-right text-blue-600">
+                      {item.total} 集
+                    </span>
                   </div>
-                  <span className="font-medium w-12 text-right text-blue-600">
-                    {item.episodes} 集
-                  </span>
+                  {Object.entries(item.taskEpisodes).length > 0 && (
+                    <div className="ml-28 space-y-1">
+                      {Object.entries(item.taskEpisodes).map(([taskId, episodes]) => (
+                        <div key={taskId} className="flex justify-between text-xs text-gray-500">
+                          <span className="truncate flex-1">{getTaskName(taskId)}</span>
+                          <span className="ml-2">{episodes} 集</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}

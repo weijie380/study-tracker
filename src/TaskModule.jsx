@@ -103,7 +103,7 @@ function TaskModule({ onProgressUpdate }) {
         const today = new Date().toISOString().split('T')[0];
         const diff = numValue - oldTask.currentEpisode;
         if (diff !== 0) {
-          storage.addDailyEpisodes(today, diff);
+          storage.addDailyEpisodes(today, id, diff);
         }
       }
     }
