@@ -10,7 +10,8 @@ function TaskModule({ onProgressUpdate }) {
     totalEpisodes: '',
     currentEpisode: '',
     notes: '',
-    startDate: ''
+    startDate: '',
+    endDate: ''
   });
 
   useEffect(() => {
@@ -44,12 +45,13 @@ function TaskModule({ onProgressUpdate }) {
       currentEpisode: parseInt(formData.currentEpisode) || 0,
       notes: formData.notes.trim(),
       startDate: formData.startDate || new Date().toISOString().split('T')[0],
+      endDate: formData.endDate || '',
       createdAt: Date.now()
     };
     const updatedTasks = [...tasks, task];
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
-    setFormData({ name: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '' });
+    setFormData({ name: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '', endDate: '' });
     setShowForm(false);
     updateProgress(updatedTasks);
   };
@@ -184,6 +186,13 @@ function TaskModule({ onProgressUpdate }) {
                 className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <input
+                type="date"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleInputChange}
+                className="px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <input
                 type="text"
                 name="notes"
                 value={formData.notes}
@@ -220,12 +229,13 @@ function TaskModule({ onProgressUpdate }) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">集数</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">备注</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">开始时间</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">结束时间</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {tasks.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
                   暂无任务，点击"添加任务"开始吧！
                 </td>
               </tr>
@@ -282,6 +292,9 @@ function TaskModule({ onProgressUpdate }) {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-sm text-gray-500">{task.startDate}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-500">{task.endDate || '-'}</span>
                     </td>
                   </tr>
                 );
