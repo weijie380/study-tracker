@@ -4,6 +4,21 @@ const STORAGE_KEYS = {
   DAILY_EPISODES: 'daily_episodes'
 };
 
+const listeners = {};
+
+export const storageEvents = {
+  on(event, callback) {
+    if (!listeners[event]) listeners[event] = [];
+    listeners[event].push(callback);
+    return () => {
+      listeners[event] = listeners[event].filter(cb => cb !== callback);
+    };
+  },
+  emit(event, data) {
+    (listeners[event] || []).forEach(cb => cb(data));
+  }
+};
+
 export const storage = {
   getTasks() {
     const data = localStorage.getItem(STORAGE_KEYS.TASKS);
@@ -33,6 +48,7 @@ export const storage = {
     }
     dailyEpisodes[date][taskId] = (dailyEpisodes[date][taskId] || 0) + count;
     this.saveDailyEpisodes(dailyEpisodes);
+    storageEvents.emit('dailyEpisodesUpdated', { date, taskId, count });
     return dailyEpisodes[date];
   },
   getTodayEpisodesByTask() {
