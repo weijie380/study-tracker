@@ -99,10 +99,12 @@ function TaskModule({ onProgressUpdate }) {
 
     if (field === 'currentEpisode') {
       const oldTask = tasks.find(t => t.id === id);
-      if (oldTask && numValue > oldTask.currentEpisode) {
+      if (oldTask) {
         const today = new Date().toISOString().split('T')[0];
         const diff = numValue - oldTask.currentEpisode;
-        storage.addDailyEpisodes(today, diff);
+        if (diff !== 0) {
+          storage.addDailyEpisodes(today, diff);
+        }
       }
     }
   };
