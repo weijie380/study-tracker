@@ -59,8 +59,11 @@ function ProgressModule() {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span className="text-3xl"></span>
+        <span className="text-3xl">📊</span>
         今日学习进度
+        <span className="text-sm font-normal text-gray-500 ml-2">
+          {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+        </span>
       </h2>
 
       <div className="mb-6">
