@@ -11,7 +11,8 @@ function TaskModule({ onProgressUpdate }) {
     currentEpisode: '',
     notes: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    url: ''
   });
 
   useEffect(() => {
@@ -46,12 +47,13 @@ function TaskModule({ onProgressUpdate }) {
       notes: formData.notes.trim(),
       startDate: formData.startDate || new Date().toISOString().split('T')[0],
       endDate: formData.endDate || '',
+      url: formData.url.trim(),
       createdAt: Date.now()
     };
     const updatedTasks = [...tasks, task];
     setTasks(updatedTasks);
     storage.saveTasks(updatedTasks);
-    setFormData({ name: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '', endDate: '' });
+    setFormData({ name: '', totalEpisodes: '', currentEpisode: '', notes: '', startDate: '', endDate: '', url: '' });
     setShowForm(false);
     updateProgress(updatedTasks);
   };
@@ -212,6 +214,14 @@ function TaskModule({ onProgressUpdate }) {
                 placeholder="备注"
                 className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 md:col-span-2"
               />
+              <input
+                type="url"
+                name="url"
+                value={formData.url}
+                onChange={handleInputChange}
+                placeholder="课程链接（可选）"
+                className="px-3 py-2 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 md:col-span-2"
+              />
             </div>
             <button
               onClick={addTask}
@@ -240,6 +250,7 @@ function TaskModule({ onProgressUpdate }) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">进度</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">集数</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-40">备注</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">链接</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-36">开始时间</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-36">结束时间</th>
             </tr>
@@ -266,12 +277,24 @@ function TaskModule({ onProgressUpdate }) {
                     </td>
                     <td className="px-4 py-3 text-gray-500">{index + 1}</td>
                     <td className="px-4 py-3">
-                      <input
-                        type="text"
-                        value={task.name}
-                        onChange={(e) => updateField(task.id, 'name', e.target.value)}
-                        className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
-                      />
+                      {task.url ? (
+                        <a
+                          href={task.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-amber-600 hover:text-amber-800 hover:underline inline-block max-w-[200px] truncate"
+                          title={task.name}
+                        >
+                          {task.name}
+                        </a>
+                      ) : (
+                        <input
+                          type="text"
+                          value={task.name}
+                          onChange={(e) => updateField(task.id, 'name', e.target.value)}
+                          className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
+                        />
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -312,6 +335,21 @@ function TaskModule({ onProgressUpdate }) {
                         placeholder="-"
                         className="w-full px-2 py-1 border border-transparent hover:border-gray-300 focus:border-amber-400 rounded text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-transparent"
                       />
+                    </td>
+                    <td className="px-4 py-3">
+                      {task.url ? (
+                        <a
+                          href={task.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition-colors"
+                          title={task.url}
+                        >
+                          🔗 打开
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <input
